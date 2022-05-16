@@ -5,7 +5,8 @@ import mysql.connector
 
 #-User Class Start---------------------------------------------------------------------------
 class User:
-    def __init__(self, f_name, l_name, dob, address, phone, email, password):
+    def __init__(self, user_id, f_name, l_name, dob, address, phone, email, password):
+        self.__user_id = user_id
         self.__f_name = f_name
         self.__l_name = l_name
         self.__dob = dob
@@ -13,9 +14,15 @@ class User:
         self.__phone = phone
         self.__email = email
         self.__password = password
-##        self.__user_img = user_img
 
-    # First Name
+    @property
+    def user_id(self):
+        return self.__user_id
+
+    @user_id.setter
+    def user_id(self, user_id):
+        self.__user_id = user_id
+
     @property
     def f_name(self):
         return self.__f_name
@@ -24,7 +31,6 @@ class User:
     def f_name(self, f_name):
         self.__f_name = f_name
 
-    # Last Name
     @property
     def l_name(self):
         return self.__l_name
@@ -33,7 +39,6 @@ class User:
     def l_name(self, l_name):
         self.__l_name = l_name
 
-    # Date of Birth
     @property
     def dob(self):
         return self.__dob
@@ -42,7 +47,6 @@ class User:
     def dob(self, dob):
         self.__dob = dob
 
-    # Address
     @property
     def address(self):
         return self.__address
@@ -51,7 +55,6 @@ class User:
     def address(self, address):
         self.__address = address
 
-    # Phone Number
     @property
     def phone(self):
         return self.__phone
@@ -60,7 +63,6 @@ class User:
     def phone(self, phone):
         self.__phone = phone
 
-    #Email
     @property
     def email(self):
         return self.__email
@@ -69,7 +71,6 @@ class User:
     def email(self, email):
         self.__email = email
 
-    #Email
     @property
     def password(self):
         return self.__password
@@ -78,17 +79,10 @@ class User:
     def password(self, password):
         self.__password = password
 
-
-##    #User Image
-##    @property
-##    def user_img(self):
-##        return self.__user_img
-##
-##    @user_img.setter
-##    def email(self, user_img):
-##        self.__user_img = user_img
+    def __str__(self):
+        return (self.user_id, self.f_name, self.l_name, self.dob, self.address, self.phone, self.email, self.password)
         
-#-User Class End---------------------------------------------------------------------------
+#-User Class End-----------------------------------------------------------------------------
 
 
 #-Item Class Start---------------------------------------------------------------------------
@@ -101,6 +95,7 @@ class Item:
         self.__place_of_purchase = place_of_purchase
         self.__proof_of_purchase = proof_of_purchase
         self.__status = status
+ 
 
     @property
     def make(self):
@@ -159,13 +154,15 @@ class Item:
         self.__status = status
 
         
-#-Item Class End-----------------------------------------------------------------------------
+#-Item Class End------------------------------------------------------------------------------------
 
 
 #-UserManager Class Start---------------------------------------------------------------------------
 class UserManager:
     def __init__(self):
-
+        self.user_info = []
+        self.bike_info = []
+        
         self.mydb = mysql.connector.connect(
         host="bqbjw0okdcewzqeo5swt-mysql.services.clever-cloud.com",
         user="uwvzaqz89axgep1k",
@@ -194,8 +191,6 @@ class UserManager:
                               status VARCHAR(255),
                               PRIMARY KEY (bike_id))""")
                         
-        self.users = []
-        self.current_user = [0,0]
 
     # Add a user
     def add_user(self, f_name, l_name, dob, address, phone, email, password):
@@ -205,47 +200,75 @@ class UserManager:
         self.mydb.commit()
     
     # Check for a user
-    def check_user(self, email):
+    def check_user(self, new_email):
         email_spotted = 0
-        index = 0
-        while index < len(self.users):
-            if email == self.users[index].email:
+        self.mycursor.execute("SELECT email FROM users WHERE email = '"+ new_email +"'")
+        myresult = self.mycursor.fetchall()
+        for i in myresult:
+            if new_email in i:
                 email_spotted = 1
-            index += 1      
         return email_spotted
     
     # Login - Verify User
-    def login(self, email, password):
-        email_pass = None
-        index = 0
-        while index < len(self.users):
-            if email == self.users[index].email:
-                email_pass = index
-                if password == self.users[email_pass].password:
-                    self.current_user[0] = 1
-                    self.current_user[1] = email_pass
-            index += 1    
-        print(str(self.current_user) + " Marker login BE")    
-        return self.current_user
+    def login(self, email, check_password):
+        check_passwd = 0
+        self.mycursor.execute("SELECT * FROM users WHERE email = '"+ email +"'")
+        myresult = self.mycursor.fetchall()
+        acc_info_tuple = myresult[0] 
+        user_id, f_name, l_name, dob, address, phone, email, password = acc_info_tuple
+        if password == check_password:
+                check_passwd = 1
+                self.user_info.append(User(user_id, f_name, l_name, dob, address, phone, email, password))
+        return check_passwd
 
-    def logged_in(self):
-        print("Marker logged_in BE")
-        if self.users != []:
-            current_logged_in = self.users[self.current_user[1]]
-        else:
-            current_logged_in = [0,0]
-        return current_logged_in
+    def first_name(self):
+        first_name = self.user_info[0].f_name
+        return (first_name)
 
-    def account_details(self, account_num):
-        print("marker Acc Details BE")
-        return (self.users[account_num])
+    def account_details(self):
+        acc_details ="First name: "+self.user_info[0].f_name+"\n"
+        acc_details +="Last name: "+self.user_info[0].l_name+"\n"
+        acc_details +="D.O.B.: "+self.user_info[0].dob+"\n"
+        acc_details +="Address: "+self.user_info[0].address+"\n"
+        acc_details +="Phone: "+self.user_info[0].phone+"\n"
+        acc_details +="Email: "+self.user_info[0].email+"\n"           
+        return (acc_details)
+
+
+#--Item Control ----------------------------------------------------------------------------------------
+    
+    def add_item(self, f_name, l_name, dob, address, phone, email, password):
+        self.sql = "INSERT INTO users (f_name, l_name, dob, address, phone, email, password) VALUES (%s,%s,%s,%s,%s,%s,%s)"
+        self.val = (f_name, l_name, dob, address, phone, email, password)
+        self.mycursor.execute(self.sql, self.val)
+        self.mydb.commit()
+    
+    # Check for an item
+    def check_item(self, new_serial):
+        serial_spotted = 0
+        self.mycursor.execute("IF EXISTS serial_number FROM items WHERE serial_number = '"+ new_serial +"'")
+        myresult = self.mycursor.fetchall()
+        items_info_tuple = myresult[0]
+        serial_number = items_info_tuple
+        if new_serial == serial_number:
+            serial_spotted = 1
+        return serial_spotted
+
+
+    def item_list(self):
+        pass
+
+
+
+
+
+
 
     # Display all users
     def display_all_users(self):
-        self.mycursor.execute("SELECT * FROM users")
-        myresult = self.mycursor.fetchall()
-        for x in myresult:
-            print(str(x))
+        pass
+        
+        
 
     
 

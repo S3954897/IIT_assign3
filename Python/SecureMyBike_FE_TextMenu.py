@@ -32,7 +32,7 @@ class SecureMyBikeUI:
 
         while app_active == True:
            
-            #Page-1 Start
+            #Page-1 Start1
             while page_menu_active == 1:
                 os.system('clear')
                 msg = ""
@@ -57,30 +57,27 @@ class SecureMyBikeUI:
             #Page-2 Login
             while page_menu_active == 2:
                 os.system('clear')
+                email_spotted = 1
+                user_active = 0
                 msg = ""
                 msg += "\n\nLogin\n\n"
-                msg += "1 - Display all users\n"
-                msg += "2 - New User Registration\n"
-
+                msg += "Email: "
                 self.terminal_out(msg)
-                self.action = self.get_str()
-            
-                if self.action == "1":
-                    wait = 1
-                    self.backend.display_all_users()
-                    while wait == 1:
-                        msg = "1 - to continue: "
-                        self.terminal_out(msg)
-                        self.action = self.get_str()
-                        wait = 0
-
-                elif self.action == "2":
-                    page_menu_active = 3
-                
-                else:
-                    msg = "Incorrect selection, Try again.\n"
+                self.email = self.get_str()
+                msg = "Password: "
+                self.terminal_out(msg)
+                self.password = self.get_str()
+                email_spotted = self.backend.check_user(self.email)
+                if email_spotted == 0:
+                    msg = "This is not registered a email"
                     self.terminal_out(msg)
-                    msg = ""
+                else:
+                    check_passwd = self.backend.login(self.email, self.password)
+                    if check_passwd == 1:
+                        page_menu_active = 4
+                    else:
+                        msg = "Password incorrect"
+                        self.terminal_out(msg)
 
             #Page - 3 User Registration
             while page_menu_active == 3:
@@ -120,56 +117,125 @@ class SecureMyBikeUI:
                             msg = "Enter a password: "
                             self.terminal_out(msg)
                             self.password = self.get_str()
-                            self.dob = ""
-                            self.phone = ""
-                            self.address = ""
+                            self.dob = "Update in your account settings"
+                            self.phone = "Update in your account settings"
+                            self.address = "Update in your account settings"
                             self.backend.add_user(self.f_name, self.l_name, self.dob, self.address, self.phone, self.email, self.password)
                             new_user_step = 0
                             page_menu_active = 2
 
-
-                # while new_user_step == 2:
-
-
-                #     os.system('clear')
-                #     msg = "\n\nNew User Registration\n\n"
-                #     self.terminal_out(msg)
-
-                #     msg = "Enter your Date of Birth: "
-                #     self.terminal_out(msg)
-                #     self.dob = self.get_str()
-
-                #     msg = "Contact Phone Number: "
-                #     self.terminal_out(msg)
-                #     self.phone = self.get_str()
-
-                #     msg = "Address: "
-                #     self.terminal_out(msg)
-                #     self.address = self.get_str()
-
-
             #Page-4 User Home
             while page_menu_active == 4:
-                msg = ""
-                msg += "\n\nUser Home\n\n"
-                msg += "1 - Login Screen\n"
-                msg += "2 - Exit\n"
-
+                acc_details = self.backend.logged_in(self.email)
+                
+                msg = "\n\nUser Home\n\n"
+                msg += "You are logged as \n\n"+self.backend.first_name()+"\n\n\n"
+                msg += "1 - Account details\n"
+                msg += "2 - Check a serial number\n"
+                msg += "3 - My bike list\n"
+                msg += "4 - Logout\n"
+                
                 self.terminal_out(msg)
                 self.action = self.get_str()
                 
                 if self.action == "1":
-                    print("action 1")
-                    page_menu_active = 2
+                    page_menu_active = 5
 
                 elif self.action == "2":
-                    print("action 2")
-                    app_active = False
+                    page_menu_active = 8
+
+                elif self.action == "3":
+                    page_menu_active = 9
+
+                elif self.action == "4":
+                    page_menu_active = 2
                 
                 else:
                     msg = "Incorrect selection, Try again.\n"
                     self.terminal_out(msg)
                     msg = ""
+
+            #Page-5 Account Details
+            while page_menu_active == 5:
+                msg = "\n\nAccount Details\n\n"
+                msg += self.backend.account_details()+"\n\n\n"
+                msg += "1 - Home\n"
+                msg += "2 - Edit Details\n"
+                msg += "3 - Terms and Conditions\n"
+                
+                self.terminal_out(msg)
+                self.action = self.get_str()
+
+                if self.action == "1":
+                    page_menu_active = 4
+
+                elif self.action == "2":
+                    #page_menu_active = ??
+                    pass
+
+                elif self.action == "3":
+                    #page_menu_active = ??
+                    pass
+                
+                else:
+                    msg = "Incorrect selection, Try again.\n"
+                    self.terminal_out(msg)
+                    msg = ""
+
+            #Page-6 Account Edit
+            while page_menu_active == 6:
+                pass
+
+            #Page-7 Terms/Conditions
+            while page_menu_active == 7:
+                pass
+
+            #Page-8 Check Serial Number
+            while page_menu_active == 8:
+                pass
+
+            #Page-9 Item List
+            while page_menu_active == 9:
+                msg = "\n\nBike list\n\n"
+                msg += self.backend.item_list()+"\n\n\n"
+                msg += "1 - Add a new bike\n"
+                msg += "2 - Edit a bike\n"
+                msg += "3 - Home\n"
+                
+                self.terminal_out(msg)
+                self.action = self.get_str()
+
+                if self.action == "1":
+                    page_menu_active = 10
+
+                elif self.action == "2":
+                    page_menu_active = 11
+                    pass
+
+                elif self.action == "3":
+                    page_menu_active = 4
+                    pass
+                
+                else:
+                    msg = "Incorrect selection, Try again.\n"
+                    self.terminal_out(msg)
+                    msg = ""
+
+            #Page-8 Add item
+            while page_menu_active == 10:
+                msg = "\n\nAdd a bike\n\n"
+                self.terminal_out(msg)    
+                
+                new_item_dup = 1
+                while new_item_dup == 1:
+                    msg = "Enter the bike serial number: "
+                    self.terminal_out(msg)
+                    self.serial_number = self.get_str()
+
+
+            #Page-8 Edit item
+            while page_menu_active == 11:
+                pass
 
 
 
