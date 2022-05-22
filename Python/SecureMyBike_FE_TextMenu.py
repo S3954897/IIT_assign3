@@ -5,7 +5,6 @@ import os
 from turtle import clear
 import SecureMyBike_BE as bE
 
-
 class SecureMyBikeUI:
     def __init__(self):
         self.backend = bE.UserManager()
@@ -17,7 +16,7 @@ class SecureMyBikeUI:
         return user_input
 
     @staticmethod
-    def get_int(self) -> int:
+    def get_int() -> int:
         user_input = sys.stdin.readline().strip()
         return user_input
     
@@ -126,7 +125,6 @@ class SecureMyBikeUI:
 
             #Page-4 User Home
             while page_menu_active == 4:
-                acc_details = self.backend.logged_in(self.email)
                 
                 msg = "\n\nUser Home\n\n"
                 msg += "You are logged as \n\n"+self.backend.first_name()+"\n\n\n"
@@ -148,7 +146,15 @@ class SecureMyBikeUI:
                     page_menu_active = 9
 
                 elif self.action == "4":
-                    page_menu_active = 2
+                    self.backend.logout()
+                    self.f_name = ""
+                    self.l_name = ""
+                    self.email = ""
+                    self.password = ""
+                    self.dob = ""
+                    self.phone = ""
+                    self.address = ""
+                    page_menu_active = 1
                 
                 else:
                     msg = "Incorrect selection, Try again.\n"
@@ -192,15 +198,27 @@ class SecureMyBikeUI:
 
             #Page-8 Check Serial Number
             while page_menu_active == 8:
-                pass
+                msg = "\n\nBike Status\n\n"
+                msg += "Enter the serial number you would like to check: \n"
+      
+                self.terminal_out(msg)
+                check_serial = self.action = self.get_str()
+                msg = self.backend.check_status(check_serial)
+                msg += "Enter to continue: "
+                self.terminal_out(msg)
+                self.action = self.get_str()
 
+                if self.action == "":
+                    page_menu_active = 4
+ 
             #Page-9 Item List
             while page_menu_active == 9:
                 msg = "\n\nBike list\n\n"
                 msg += self.backend.item_list()+"\n\n\n"
                 msg += "1 - Add a new bike\n"
-                msg += "2 - Edit a bike\n"
-                msg += "3 - Home\n"
+                msg += "2 - Edit a bike or status\n"
+                msg += "3 - Delete a bike\n"
+                msg += "4 - Home\n"
                 
                 self.terminal_out(msg)
                 self.action = self.get_str()
@@ -210,35 +228,133 @@ class SecureMyBikeUI:
 
                 elif self.action == "2":
                     page_menu_active = 11
-                    pass
 
                 elif self.action == "3":
+                    msg = "Enter the serial number of the bike\n"
+                    msg +="you want to delete: "
+                    self.terminal_out(msg)
+                    del_serial = self.get_str()
+                    msg = self.backend.del_item(del_serial)
+                    msg += "Bike deleted\n\n"
+                    msg += "Enter to continue: "
+                    self.terminal_out(msg)
+                    self.action = self.get_str()
+                            
+                elif self.action == "4":
                     page_menu_active = 4
-                    pass
-                
+                    
                 else:
                     msg = "Incorrect selection, Try again.\n"
                     self.terminal_out(msg)
                     msg = ""
 
-            #Page-8 Add item
+            #Page-10 Add item
             while page_menu_active == 10:
                 msg = "\n\nAdd a bike\n\n"
-                self.terminal_out(msg)    
-                
-                new_item_dup = 1
-                while new_item_dup == 1:
-                    msg = "Enter the bike serial number: "
+                self.terminal_out(msg)   
+                msg = "Enter the bike serial number: "
+                self.terminal_out(msg)
+                self.serial_number = self.get_str()
+                serial_spotted = self.backend.check_item(self.serial_number)
+                if serial_spotted == 1:
+                    msg = "This serial number is already registered!\n"
                     self.terminal_out(msg)
-                    self.serial_number = self.get_str()
+                    self.action = self.get_str()
+                    page_menu_active = 9
+                elif serial_spotted == 0:
 
+                    msg = "Make: "
+                    self.terminal_out(msg)
+                    self.make = self.get_str()
+
+                    msg = "Model: "
+                    self.terminal_out(msg)
+                    self.model = self.get_str()
+
+                    msg = "Colour: "
+                    self.terminal_out(msg)
+                    self.colour = self.get_str()
+
+                    self.place_of_purchase = "Update in your account settings"
+                    self.proof_of_purchase = "Update in your account settings"
+                    self.status = "Registered"
+                    self.backend.add_item(self.make, self.model, self.colour, self.serial_number, self.place_of_purchase, self.proof_of_purchase, self.status)
+                    page_menu_active = 9
 
             #Page-8 Edit item
             while page_menu_active == 11:
-                pass
+                msg = "\n\nBike Edit\n\n"
+                msg += self.backend.item_list()+"\n\n\n"
+                msg += "Select bike to edit\n"
+                msg += "Enter to return to previous menu: "             
 
+                self.terminal_out(msg)
+                self.action = self.get_str()
+                item_sel = self.action
 
+                #prints bike edit list
+                msg = self.backend.item_edit_list(item_sel)              
+                msg += "\n\nSelect field to edit\n"
+                msg += "Enter to continue: "
+                self.terminal_out(msg)
+                field_sel_str = self.get_str()
+                field_sel = int(field_sel_str)
+                if field_sel_str == "":
+                    page_menu_active = 9
+                elif field_sel in (1,8):
+                    item_edit = 1
+                    while item_edit == 1:
+                        if field_sel == 1:
+                            msg = "New make: "
+                            self.terminal_out(msg)
+                            self.action = self.get_str()
+                            new_val = self.action
 
+                        elif field_sel == 2:
+                            msg = "New model: "
+                            self.terminal_out(msg)
+                            self.action = self.get_str()
+                            new_val = self.action
+
+                        elif field_sel == 3:
+                            msg = "New serial number: "
+                            self.terminal_out(msg)
+                            self.action = self.get_str()
+                            new_val = self.action
+
+                        elif field_sel == 4:
+                            msg = "New status: "
+                            self.terminal_out(msg)
+                            self.action = self.get_str()
+                            new_val = self.action
+
+                        elif field_sel == 5:
+                            msg = "New place of purchase: "
+                            self.terminal_out(msg)
+                            self.action = self.get_str()
+                            new_val = self.action
+
+                        elif field_sel == 6:
+                            msg = "New proof of purchase: "
+                            self.terminal_out(msg)
+                            self.action = self.get_str()
+                            new_val = self.action
+
+                        elif field_sel == 7:
+                            msg = "Commit changes"
+                            self.terminal_out(msg)
+                            self.action = self.get_str()
+                            new_val = self.action
+                            self.backend.item_edit(item_sel, field_sel, new_val)
+                            item_edit = 0
+                            page_menu_active = 9
+
+                        elif field_sel == 8:             
+                            msg = "Cancel changes"
+                            self.terminal_out(msg)
+                            self.backend.item_edit(item_sel, field_sel, new_val)
+
+              
 app = SecureMyBikeUI()
                        
  
